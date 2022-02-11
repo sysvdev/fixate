@@ -1,4 +1,4 @@
-﻿/*
+/*
  *      This file is part of Fixate distribution (https://github.com/vortex1409/fixate).
  *      Copyright (c) 2022 contributors
  *
