@@ -1,0 +1,11 @@
+version: 1._{build}
+configuration: Release
+platform: x64
+install:
+- cmd: nuget sources add -Name emzi0767.com -Source https://nuget.emzi0767.com/api/v3/index.json
+before_build:
+- cmd: nuget restore
+build:
+  project: Fixate.sln
+  verbosity: minimal
+image: Visual Studio 2022
