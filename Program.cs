@@ -30,7 +30,7 @@ internal class Program
     public static string SettingPath { get; set; } = Path.Combine(CurrentDir, "config.json");
 
     public static Settings Config { get; set; } = new();
-    public static Localization Localization { get; set; }
+    public static Fixate.Datas.Localization Localization { get; set; }
 
     public static Dictionary<string, BossData> bossDatas = new();
 
@@ -312,9 +312,9 @@ internal class Program
         return ssmlDoc;
     }
 
-    public static Localization GetLocalization()
+    public static Fixate.Datas.Localization GetLocalization()
     {
-        Localization output = new();
+        Fixate.Datas.Localization output = new();
         string path = Path.Combine("localizations", $"{Config.Voice.Language.ToLower()}.json");
 
         Logger.Information("Loading {Path}", path);
@@ -331,7 +331,7 @@ internal class Program
                     ObjectCreationHandling = ObjectCreationHandling.Replace
                 };
 
-                output = JsonConvert.DeserializeObject<Localization>(json_string, s);
+                output = JsonConvert.DeserializeObject<Fixate.Datas.Localization>(json_string, s);
             }
             else
             {
@@ -369,7 +369,7 @@ internal class Program
 
                 int index = 0;
 
-                Localization localization = GetLocalization();
+                Fixate.Datas.Localization localization = GetLocalization();
 
                 while (!token.IsCancellationRequested)
                 {

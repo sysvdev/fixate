@@ -4,18 +4,18 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-	<LangVersion>10</LangVersion>
+	<LangVersion>latest</LangVersion>
 	<GenerateAssemblyInfo>true</GenerateAssemblyInfo>
 	<AssemblyName>Fixate</AssemblyName>
 	<RootNamespace>Fixate</RootNamespace>
 	<Description>A Guild Wars 2 Discord Bot for calling out raid mechanics among other things.</Description>
-	<AssemblyVersion>1.0.0.0</AssemblyVersion>
-	<FileVersion>1.0.0.0</FileVersion>
+	<AssemblyVersion>1.1.0.0</AssemblyVersion>
+	<FileVersion>1.1.0.0</FileVersion>
 	<Copyright>Copyright © 2022</Copyright>
 	<PackageId>Fixate</PackageId>
 	<Product>Fixate</Product>
 	<Authors>POQDavid</Authors>
-	<Version>1.0.0.0</Version>
+	<Version>1.1.0.0</Version>
 	<RepositoryType>git</RepositoryType>
 	<RepositoryUrl>git@github.com:vortex1409/fixate.git</RepositoryUrl>
 	<PackageProjectUrl>https://github.com/vortex1409/fixate</PackageProjectUrl>
@@ -33,12 +33,12 @@
   </PropertyGroup>
  
   <ItemGroup>
-    <PackageReference Include="DSharpPlus" Version="4.2.0-nightly-01091" />
-    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.2.0-nightly-01091" />
-    <PackageReference Include="DSharpPlus.SlashCommands" Version="4.2.0-nightly-01091" />
-    <PackageReference Include="DSharpPlus.VoiceNext" Version="4.2.0-nightly-01091" />
+    <PackageReference Include="DSharpPlus" Version="4.3.0-nightly-01135" />
+    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.3.0-nightly-01135" />
+    <PackageReference Include="DSharpPlus.SlashCommands" Version="4.3.0-nightly-01135" />
+    <PackageReference Include="DSharpPlus.VoiceNext" Version="4.3.0-nightly-01135" />
     <PackageReference Include="DSharpPlus.VoiceNext.Natives" Version="1.0.0" />
-    <PackageReference Include="Microsoft.CognitiveServices.Speech" Version="1.20.0" />
+    <PackageReference Include="Microsoft.CognitiveServices.Speech" Version="1.21.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0" />
