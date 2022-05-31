@@ -118,11 +118,8 @@ public class BotCommands : BaseCommandModule
             }
 
             var vnc = vnext.GetConnection(ctx.Guild);
-            if (vnc == null)
-            {
-                await ctx.RespondAsync("Not connected in this guild.");
-                return;
-            }
+
+            Program.lastdiscordChannel = ctx.Channel;
 
             Program.RunMechanic(Program.bossDatas[boss], playernames.ToArray(), vnc);
         }
