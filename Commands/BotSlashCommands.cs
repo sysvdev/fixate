@@ -115,11 +115,7 @@ public class BotSlashCommands : ApplicationCommandModule
             }
 
             var vnc = vnext.GetConnection(ctx.Guild);
-            if (vnc == null)
-            {
-                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Not connected in this guild."));
-                return;
-            }
+            Program.lastdiscordChannel = ctx.Channel;
 
             Program.RunMechanic(Program.bossDatas[boss], playernames.ToArray(), vnc);
         }

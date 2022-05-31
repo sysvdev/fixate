@@ -16,6 +16,8 @@
  *      along with Fixate.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+using System.Diagnostics;
+
 namespace Fixate;
 
 internal class Program
@@ -36,11 +38,13 @@ internal class Program
 
     public readonly EventId BotEventId = new(42, "Fixate");
 
-    public DiscordClient Client { get; set; }
+    public static DiscordClient? Client { get; set; }
     public CommandsNextExtension Commands { get; set; }
     public VoiceNextExtension Voice { get; set; }
 
     public static bool stop = false;
+
+    public static DiscordChannel? lastdiscordChannel = null;
 
     private static void Main(string[] args)
     {
@@ -128,11 +132,11 @@ internal class Program
             LoggerFactory = logFactory
         };
 
-        this.Client = new DiscordClient(cfg);
+        Client = new DiscordClient(cfg);
 
-        this.Client.Ready += this.Client_Ready;
-        this.Client.GuildAvailable += this.Client_GuildAvailable;
-        this.Client.ClientErrored += this.Client_ClientError;
+        Client.Ready += this.Client_Ready;
+        Client.GuildAvailable += this.Client_GuildAvailable;
+        Client.ClientErrored += this.Client_ClientError;
 
         var ccfg = new CommandsNextConfiguration
         {
@@ -143,8 +147,8 @@ internal class Program
             EnableMentionPrefix = true
         };
 
-        var slash = this.Client.UseSlashCommands();
-        this.Commands = this.Client.UseCommandsNext(ccfg);
+        var slash = Client.UseSlashCommands();
+        this.Commands = Client.UseCommandsNext(ccfg);
 
         this.Commands.CommandExecuted += this.Commands_CommandExecuted;
         this.Commands.CommandErrored += this.Commands_CommandErrored;
@@ -156,9 +160,9 @@ internal class Program
         this.Commands.RegisterCommands<BotCommands>();
         slash.RegisterCommands<BotSlashCommands>();
 
-        this.Voice = this.Client.UseVoiceNext();
+        this.Voice = Client.UseVoiceNext();
 
-        await this.Client.ConnectAsync();
+        await Client.ConnectAsync();
 
         await Task.Delay(-1);
     }
@@ -353,84 +357,103 @@ internal class Program
 
         for (int bmIndex = 0; bmIndex <= bossData.Mechanics.Length - 1; bmIndex++)
         {
-            CancellationTokenSource cts = new();
-            CancellationToken token = cts.Token;
-            cts.CancelAfter(TimeSpan.FromSeconds(bossData.TimeLimit));
-            token.ThrowIfCancellationRequested();
-
             BossMechanics bossMechanics = bossData.Mechanics[bmIndex];
+            Logger.Information("Starting boss mechanics thread for Index: {BossMIndex}", bmIndex);
 
             Thread thread = new(() =>
             {
-                Thread.CurrentThread.Name = $"BossMechanics{bmIndex + 1}";
+                Thread.CurrentThread.Name = $"BossMechanics{bmIndex}";
 
-                int seconds = 1;
-                int interval = 1;
+                Stopwatch starttime = new();
+                Stopwatch intervaltime = new();
 
                 int index = 0;
 
-                Fixate.Datas.Localization localization = GetLocalization();
+                int playerIndex = 1;
 
-                while (!token.IsCancellationRequested)
+                Datas.Localization localization = GetLocalization();
+
+                Say(localization.TimerCountDown, vnc);
+
+                Say(localization.TimerStart, vnc);
+
+                starttime.Start();
+
+                bool startit = false;
+                bool stopit = false;
+
+                while (true)
                 {
-                    if (seconds == (bossMechanics.StartTime - 4) && bmIndex == 0)
+                    if (starttime.Elapsed.TotalSeconds == bossMechanics.StartTime)
                     {
-                        Say(localization.TimerCountDown, vnc);
+                        startit = true;
                     }
 
-                    if (seconds >= bossMechanics.StartTime)
+                    if ((intervaltime.Elapsed.TotalSeconds >= bossMechanics.Interval - bossMechanics.WarnTime) || startit)
                     {
-                        if (bossMechanics.WarnTime != 0)
+                        if (bossMechanics.PlayersInvolved != 0)
                         {
-                            if (interval == (bossMechanics.Interval - bossMechanics.WarnTime))
+                            if ((index + 1) > bossMechanics.MechanicNames.Length)
                             {
-                                Say(localization.TimerStart, vnc);
+                                index = 0;
                             }
+
+                            if (playerIndex > bossMechanics.PlayersInvolved)
+                            {
+                                playerIndex = 1;
+                            }
+
+                            MechanicExe(bossMechanics, index, playerIndex, players, vnc, localization);
+
+                            playerIndex++;
+                            index++;
+                        }
+                        else
+                        {
+                            MechanicExe(bossMechanics, index, playerIndex, players, vnc, localization);
                         }
 
-                        if (interval == bossMechanics.Interval)
-                        {
-                            if (bossMechanics.PlayersInvolved != 0)
-                            {
-                                for (int playerindex = 1; playerindex <= bossMechanics.PlayersInvolved; playerindex++)
-                                {
-                                    if ((index + 1) > bossMechanics.MechanicNames.Length)
-                                    {
-                                        index = 0;
-                                    }
-
-                                    string MechanicName = bossMechanics.MechanicNames[index];
-                                    string PlayerName = localization.DefaultPlayerNameFormat.Replace("%(name)", players[(playerindex - 1)]).Replace("%(index)", playerindex.ToString());
-
-                                    Say(localization.MechanicsFormat.Replace("%(playerName)", PlayerName).Replace("%(mechanicName)", MechanicName), vnc);
-
-                                    index++;
-                                }
-                            }
-                            else
-                            {
-                                Say(bossMechanics.MechanicNames[0], vnc);
-                            }
-
-                            interval = 0;
-                        }
-
-                        interval++;
+                        intervaltime.Restart();
+                        startit = false;
                     }
 
-                    if (stop) { break; }
+                    if (starttime.Elapsed.TotalSeconds >= bossData.TimeLimit + 1) { stopit = true; }
 
-                    seconds++;
-                    Thread.Sleep(1000);
+                    if (stop || stopit) { starttime.Stop(); intervaltime.Stop(); break; }
                 }
-            });
-            thread.IsBackground = true;
+
+                Logger.Information("Seconds: {Seconds}", starttime.Elapsed.TotalSeconds);
+
+                if (Client != null)
+                {
+                    _ = Client.SendMessageAsync(lastdiscordChannel, $"End of the Mechanic Index: {bmIndex}");
+                }
+            })
+            {
+                IsBackground = true
+            };
+
             thread.Start();
             Thread.Sleep(500);
         }
     }
 
     public static string LastSay = "";
+
+    public static void MechanicExe(BossMechanics bossMechanics, int index, int playerIndex, string[] players, VoiceNextConnection vnc, Datas.Localization localization)
+    {
+        if (bossMechanics.PlayersInvolved != 0)
+        {
+            string MechanicName = bossMechanics.MechanicNames[index];
+            string PlayerName = localization.DefaultPlayerNameFormat.Replace("%(name)", players[(playerIndex - 1)]).Replace("%(index)", playerIndex.ToString());
+
+            Say(localization.MechanicsFormat.Replace("%(playerName)", PlayerName).Replace("%(mechanicName)", MechanicName), vnc);
+        }
+        else
+        {
+            Say(bossMechanics.MechanicNames[0], vnc);
+        }
+    }
 
     public static void Say(string text, VoiceNextConnection vnc)
     {
@@ -439,17 +462,27 @@ internal class Program
             LastSay = text;
             Logger.Information("Saying {Text}", text);
 
-            try
+            if (vnc == null)
             {
-                vnc.SendSpeakingAsync(true);
-                var ffout = new MemoryStream(Program.GetTTSStream(text).GetAwaiter().GetResult() ?? Array.Empty<byte>());
-
-                var txStream = vnc.GetTransmitSink();
-                ffout.CopyToAsync(txStream);
-                txStream.FlushAsync();
-                vnc.WaitForPlaybackFinishAsync();
+                if (Client != null)
+                {
+                    _ = Client.SendMessageAsync(lastdiscordChannel, $"**[{DateTime.Now:HH:mm:ss}]** {text}");
+                }
             }
-            catch (Exception ex) { Logger.Error(ex, "Failed saying {Text}", text); }
+            else
+            {
+                try
+                {
+                    vnc.SendSpeakingAsync(true);
+                    var ffout = new MemoryStream(Program.GetTTSStream(text).GetAwaiter().GetResult() ?? Array.Empty<byte>());
+
+                    var txStream = vnc.GetTransmitSink();
+                    ffout.CopyToAsync(txStream);
+                    txStream.FlushAsync();
+                    vnc.WaitForPlaybackFinishAsync();
+                }
+                catch (Exception ex) { Logger.Error(ex, "Failed saying {Text}", text); }
+            }
         }
     }
 }
