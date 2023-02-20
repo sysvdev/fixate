@@ -1,6 +1,6 @@
 /*
  *      This file is part of Fixate distribution (https://github.com/vortex1409/fixate).
- *      Copyright (c) 2022 contributors
+ *      Copyright (c) 2023 contributors
  *
  *      Fixate is free software: you can redistribute it and/or modify
  *      it under the terms of the GNU General Public License as published by
@@ -18,12 +18,12 @@
 
 namespace Fixate.Datas;
 
-public struct Settings
+public class Settings
 {
     private Discord defaultDiscord = new();
     private Voice defaultVoice = new();
 
-    [JsonProperty("discord")]
+    [JsonPropertyName("discord")]
     public Discord Discord
     {
         get => defaultDiscord;
@@ -33,7 +33,7 @@ public struct Settings
         }
     }
 
-    [JsonProperty("voice")]
+    [JsonPropertyName("voice")]
     public Voice Voice
     {
         get => defaultVoice;
@@ -52,19 +52,16 @@ public struct Settings
     /// <summary>
     /// Saves the App settings in selected path.
     /// </summary>
-    public static void SaveSetting()
+    public void SaveSetting()
     {
         if (!Directory.Exists(Program.CurrentDir))
         {
             _ = Directory.CreateDirectory(Program.CurrentDir);
         }
 
-        JsonSerializerSettings s = new()
-        {
-            ObjectCreationHandling = ObjectCreationHandling.Replace
-        };
+        JsonSerializerOptions options = new() { WriteIndented = true };
 
-        File.WriteAllText(Program.SettingPath, JsonConvert.SerializeObject(Program.Config, Formatting.Indented, s));
+        File.WriteAllText(Program.SettingPath, JsonSerializer.Serialize(Program.Config, options));
     }
 
     /// <summary>
@@ -77,13 +74,12 @@ public struct Settings
             string json_string = File.ReadAllText(Program.SettingPath);
             if (Json.IsValid(json_string))
             {
-                JsonSerializerSettings s = new()
+                JsonSerializerOptions options = new()
                 {
-                    NullValueHandling = NullValueHandling.Ignore,
-                    ObjectCreationHandling = ObjectCreationHandling.Replace
+                    WriteIndented = true
                 };
 
-                Program.Config = JsonConvert.DeserializeObject<Settings>(json_string, s);
+                Program.Config = JsonSerializer.Deserialize<Settings>(json_string, options);
             }
             else
             {
@@ -99,7 +95,7 @@ public struct Settings
     }
 }
 
-public struct Discord
+public class Discord
 {
     private string defaultToken = "<token>";
     private string defaultCommandPrefix = "!";
@@ -116,7 +112,7 @@ public struct Discord
         CommandPrefix = prefix;
     }
 
-    [JsonProperty("token")]
+    [JsonPropertyName("token")]
     [DefaultValue("")]
     public string Token
     {
@@ -127,7 +123,7 @@ public struct Discord
         }
     }
 
-    [JsonProperty("prefix")]
+    [JsonPropertyName("prefix")]
     [DefaultValue("")]
     public string CommandPrefix
     {
@@ -139,7 +135,7 @@ public struct Discord
     }
 }
 
-public struct Voice
+public class Voice
 {
     private string defaultAPIToken = "";
     private string defaultAPIRegion = "";
@@ -165,7 +161,7 @@ public struct Voice
         Style = style;
     }
 
-    [JsonProperty("apitoken")]
+    [JsonPropertyName("apitoken")]
     [DefaultValue("")]
     public string APIToken
     {
@@ -176,7 +172,7 @@ public struct Voice
         }
     }
 
-    [JsonProperty("apiregion")]
+    [JsonPropertyName("apiregion")]
     [DefaultValue("")]
     public string APIRegion
     {
@@ -187,7 +183,7 @@ public struct Voice
         }
     }
 
-    [JsonProperty("language")]
+    [JsonPropertyName("language")]
     [DefaultValue("en-US")]
     public string Language
     {
@@ -198,7 +194,7 @@ public struct Voice
         }
     }
 
-    [JsonProperty("name")]
+    [JsonPropertyName("name")]
     [DefaultValue("en-US-JennyNeural")]
     public string Name
     {
@@ -209,7 +205,7 @@ public struct Voice
         }
     }
 
-    [JsonProperty("style")]
+    [JsonPropertyName("style")]
     [DefaultValue("chat")]
     public string Style
     {

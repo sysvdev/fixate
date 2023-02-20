@@ -1,6 +1,6 @@
 ﻿/*
  *      This file is part of Fixate distribution (https://github.com/vortex1409/fixate).
- *      Copyright (c) 2022 contributors
+ *      Copyright (c) 2023 contributors
  *
  *      Fixate is free software: you can redistribute it and/or modify
  *      it under the terms of the GNU General Public License as published by
@@ -15,8 +15,6 @@
  *      You should have received a copy of the GNU General Public License
  *      along with Fixate.  If not, see <https://www.gnu.org/licenses/>.
  */
-
-using System.Diagnostics;
 
 namespace Fixate;
 
@@ -79,6 +77,17 @@ internal class Program
     public Program()
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     {
+        Config.Discord.Token = Environment.GetEnvironmentVariable("Discord_Token") ?? Config.Discord.Token;
+        Config.Discord.CommandPrefix = Environment.GetEnvironmentVariable("Discord_CommandPrefix") ?? Config.Discord.CommandPrefix;
+
+        Config.Voice.APIToken = Environment.GetEnvironmentVariable("Voice_APIToken") ?? Config.Voice.APIToken;
+        Config.Voice.APIRegion = Environment.GetEnvironmentVariable("Voice_APIRegion") ?? Config.Voice.APIRegion;
+        Config.Voice.Language = Environment.GetEnvironmentVariable("Voice_Language") ?? Config.Voice.Language;
+        Config.Voice.Name = Environment.GetEnvironmentVariable("Voice_Name") ?? Config.Voice.Name;
+        Config.Voice.Style = Environment.GetEnvironmentVariable("Voice_Style") ?? Config.Voice.Style;
+
+        Config.SaveSetting();
+
         if (!Directory.Exists(BossDataPath))
         {
             Directory.CreateDirectory(BossDataPath);
@@ -97,15 +106,14 @@ internal class Program
 
                     if (Json.IsValid(json_string))
                     {
-                        JsonSerializerSettings s = new()
+                        JsonSerializerOptions options = new()
                         {
-                            NullValueHandling = NullValueHandling.Ignore,
-                            ObjectCreationHandling = ObjectCreationHandling.Replace
+                            WriteIndented = true
                         };
 
                         try
                         {
-                            BossData bd = JsonConvert.DeserializeObject<BossData>(json_string, s) ?? throw new Exception("Error deserializing data"); ;
+                            BossData bd = JsonSerializer.Deserialize<BossData>(json_string, options) ?? throw new Exception("Error deserializing data");
                             bossDatas.Add(bd.Name, bd);
                         }
                         catch (Exception ex)
@@ -329,13 +337,12 @@ internal class Program
         {
             if (Json.IsValid(json_string))
             {
-                JsonSerializerSettings s = new()
+                JsonSerializerOptions options = new()
                 {
-                    NullValueHandling = NullValueHandling.Ignore,
-                    ObjectCreationHandling = ObjectCreationHandling.Replace
+                    WriteIndented = true
                 };
 
-                output = JsonConvert.DeserializeObject<Fixate.Datas.Localization>(json_string, s);
+                output = JsonSerializer.Deserialize<Fixate.Datas.Localization>(json_string, options);
             }
             else
             {

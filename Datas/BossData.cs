@@ -1,6 +1,6 @@
 ﻿/*
  *      This file is part of Fixate distribution (https://github.com/vortex1409/fixate).
- *      Copyright (c) 2022 contributors
+ *      Copyright (c) 2023 contributors
  *
  *      Fixate is free software: you can redistribute it and/or modify
  *      it under the terms of the GNU General Public License as published by
@@ -24,7 +24,7 @@ public class BossData
     private BossMechanics[] defaultMechanics = Array.Empty<BossMechanics>();
     private int defaultTimeLimit = 0;
 
-    [JsonProperty("name")]
+    [JsonPropertyName("name")]
     public string Name
     {
         get => defaultName;
@@ -34,7 +34,7 @@ public class BossData
         }
     }
 
-    [JsonProperty("mechanics")]
+    [JsonPropertyName("mechanics")]
     public BossMechanics[] Mechanics
     {
         get => defaultMechanics;
@@ -44,7 +44,7 @@ public class BossData
         }
     }
 
-    [JsonProperty("timeLimit")]
+    [JsonPropertyName("timeLimit")]
     [DefaultValue(0)]
     public int TimeLimit
     {

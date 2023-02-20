@@ -1,6 +1,6 @@
 ﻿/*
  *      This file is part of Fixate distribution (https://github.com/vortex1409/fixate).
- *      Copyright (c) 2022 contributors
+ *      Copyright (c) 2023 contributors
  *
  *      Fixate is free software: you can redistribute it and/or modify
  *      it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@ public class BossMechanics
     private string[] defaultMechanicNames = Array.Empty<string>();
     private int defaultWarnTime = 0;
 
-    [JsonProperty("startTime")]
+    [JsonPropertyName("startTime")]
     [DefaultValue(0)]
     public int StartTime
     {
@@ -37,7 +37,7 @@ public class BossMechanics
         }
     }
 
-    [JsonProperty("interval")]
+    [JsonPropertyName("interval")]
     [DefaultValue(0)]
     public int Interval
     {
@@ -48,7 +48,7 @@ public class BossMechanics
         }
     }
 
-    [JsonProperty("playersInvolved")]
+    [JsonPropertyName("playersInvolved")]
     [DefaultValue(0)]
     public int PlayersInvolved
     {
@@ -59,7 +59,7 @@ public class BossMechanics
         }
     }
 
-    [JsonProperty("mechanicNames")]
+    [JsonPropertyName("mechanicNames")]
     public string[] MechanicNames
     {
         get => defaultMechanicNames;
@@ -69,7 +69,7 @@ public class BossMechanics
         }
     }
 
-    [JsonProperty("warnTime")]
+    [JsonPropertyName("warnTime")]
     [DefaultValue(0)]
     public int WarnTime
     {
