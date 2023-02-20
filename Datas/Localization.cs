@@ -1,6 +1,6 @@
 ﻿/*
  *      This file is part of Fixate distribution (https://github.com/vortex1409/fixate).
- *      Copyright (c) 2022 contributors
+ *      Copyright (c) 2023 contributors
  *
  *      Fixate is free software: you can redistribute it and/or modify
  *      it under the terms of the GNU General Public License as published by
@@ -27,13 +27,13 @@ public struct Localization
 
     public Localization()
     {
-       defaultTimerCountDown = string.Empty;
-       defaultTimerStart = string.Empty;
-       defaultMechanicsFormat = string.Empty;
-       defaultDefaultPlayerNameFormat = string.Empty;
+        defaultTimerCountDown = string.Empty;
+        defaultTimerStart = string.Empty;
+        defaultMechanicsFormat = string.Empty;
+        defaultDefaultPlayerNameFormat = string.Empty;
     }
 
-    [JsonProperty("timer-count-down")]
+    [JsonPropertyName("timer-count-down")]
     public string TimerCountDown
     {
         get => defaultTimerCountDown;
@@ -43,7 +43,7 @@ public struct Localization
         }
     }
 
-    [JsonProperty("timer-start")]
+    [JsonPropertyName("timer-start")]
     public string TimerStart
     {
         get => defaultTimerStart;
@@ -53,7 +53,7 @@ public struct Localization
         }
     }
 
-    [JsonProperty("mechanics-format")]
+    [JsonPropertyName("mechanics-format")]
     public string MechanicsFormat
     {
         get => defaultMechanicsFormat;
@@ -63,7 +63,7 @@ public struct Localization
         }
     }
 
-    [JsonProperty("default-player-name-format")]
+    [JsonPropertyName("default-player-name-format")]
     public string DefaultPlayerNameFormat
     {
         get => defaultDefaultPlayerNameFormat;

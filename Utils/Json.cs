@@ -1,6 +1,6 @@
 /*
  *      This file is part of Fixate distribution (https://github.com/vortex1409/fixate).
- *      Copyright (c) 2022 contributors
+ *      Copyright (c) 2023 contributors
  *
  *      Fixate is free software: you can redistribute it and/or modify
  *      it under the terms of the GNU General Public License as published by
@@ -30,10 +30,10 @@ public class Json
     {
         try
         {
-            _ = JToken.Parse(json_string);
+            _ = JsonNode.Parse(json_string);
             return true;
         }
-        catch (JsonReaderException)
+        catch (JsonException)
         {
             return false;
         }

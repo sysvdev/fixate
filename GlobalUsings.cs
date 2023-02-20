@@ -1,6 +1,6 @@
 ﻿/*
  *      This file is part of Fixate distribution (https://github.com/vortex1409/fixate).
- *      Copyright (c) 2022 contributors
+ *      Copyright (c) 2023 contributors
  *
  *      Fixate is free software: you can redistribute it and/or modify
  *      it under the terms of the GNU General Public License as published by
@@ -36,7 +36,12 @@ global using Serilog;
 global using Serilog.Core;
 global using System;
 global using System.Collections.Generic;
+global using System.ComponentModel;
+global using System.Diagnostics;
 global using System.IO;
 global using System.Runtime.InteropServices;
+global using System.Text.Json;
+global using System.Text.Json.Nodes;
+global using System.Text.Json.Serialization;
 
 namespace Fixate;
