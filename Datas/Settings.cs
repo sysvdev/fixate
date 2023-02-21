@@ -18,6 +18,7 @@
 
 namespace Fixate.Datas;
 
+#nullable disable
 public class Settings
 {
     private Discord defaultDiscord = new();
