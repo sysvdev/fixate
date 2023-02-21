@@ -184,13 +184,14 @@ internal class Program
         return Task.CompletedTask;
     }
 
+#nullable disable
     private async Task Slash_SlashCommandErrored(SlashCommandsExtension sender, DSharpPlus.SlashCommands.EventArgs.SlashCommandErrorEventArgs e)
     {
         Thread.CurrentThread.Name = "MainThread";
 
         e.Context.Client.Logger.LogError(BotEventId, "{Username} tried executing '{CommandName}' but it errored: {Type}: {Message}", e.Context.User.Username, e.Context?.CommandName ?? "<unknown command>", e.Exception.GetType(), e.Exception.Message ?? "<no message>");
 
-        if (e.Exception is ChecksFailedException ex)
+        if (e.Exception is ChecksFailedException)
         {
             var emoji = DiscordEmoji.FromName(e.Context.Client, ":no_entry:");
 
@@ -203,6 +204,7 @@ internal class Program
             await e.Context.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"{embed}"));
         }
     }
+#nullable enable
 
     private Task Slash_SlashCommandExecuted(SlashCommandsExtension sender, DSharpPlus.SlashCommands.EventArgs.SlashCommandExecutedEventArgs e)
     {

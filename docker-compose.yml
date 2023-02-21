@@ -6,5 +6,3 @@ services:
     build:
       context: .
       dockerfile: ./Dockerfile
-    environment: 
-      - Discord_Token=THIS IS THE TOKEN
