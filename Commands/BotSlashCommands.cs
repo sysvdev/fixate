@@ -20,6 +20,21 @@ namespace Fixate.Commands;
 
 public class BotSlashCommands : ApplicationCommandModule
 {
+    public class BossChoiceProvider : IChoiceProvider
+    {
+        public async Task<IEnumerable<DiscordApplicationCommandOptionChoice>> Provider()
+        {
+            List<DiscordApplicationCommandOptionChoice> temp = new();
+
+            foreach (string boss in Program.bossDatas.Keys)
+            {
+                temp.Add(new DiscordApplicationCommandOptionChoice(boss, boss));
+            }
+
+            return temp;
+        }
+    }
+
     [SlashCommand("join", "Joins a voice channel.")]
     public async Task Join(InteractionContext ctx, [Option("channel", "Channel to join")] DiscordChannel chn = null)
     {
@@ -73,7 +88,7 @@ public class BotSlashCommands : ApplicationCommandModule
     }
 
     [SlashCommand("start", "Starts the bot.")]
-    public async Task Start(InteractionContext ctx, [Option("boss", "Name of the boss.")] string boss, [Option("names", "Names of the players seperated by space."), RemainingText] String names = null)
+    public async Task Start(InteractionContext ctx, [ChoiceProvider(typeof(BossChoiceProvider))][Option("boss", "Name of the boss.")] string boss, [Option("names", "Names of the players seperated by space."), RemainingText] String names = null)
     {
         string[] objects = Array.Empty<string>();
 
@@ -117,6 +132,7 @@ public class BotSlashCommands : ApplicationCommandModule
             var vnc = vnext.GetConnection(ctx.Guild);
             Program.lastdiscordChannel = ctx.Channel;
 
+            Program.stop = false;
             Program.RunMechanic(Program.bossDatas[boss], playernames.ToArray(), vnc);
         }
 

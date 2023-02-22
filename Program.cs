@@ -40,7 +40,7 @@ internal class Program
 
     public VoiceNextExtension Voice { get; set; }
 
-    public static bool stop = false;
+    public static bool stop = true;
 
     public static DiscordChannel? lastdiscordChannel = null;
 
@@ -78,6 +78,16 @@ internal class Program
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     {
         Config.Discord.Token = Environment.GetEnvironmentVariable("Discord_Token") ?? Config.Discord.Token;
+        Config.Discord.DefaultActivity = Environment.GetEnvironmentVariable("Discord_DefaultActivity") ?? Config.Discord.DefaultActivity;
+
+        if (Enum.TryParse<ActivityType>(Environment.GetEnvironmentVariable("Discord_DefaultActivityType"), out ActivityType at))
+        {
+            Config.Discord.DefaultActivityType = at;
+        }
+        else
+        {
+            Config.Discord.DefaultActivityType = ActivityType.ListeningTo;
+        }
 
         Config.Voice.APIToken = Environment.GetEnvironmentVariable("Voice_APIToken") ?? Config.Voice.APIToken;
         Config.Voice.APIRegion = Environment.GetEnvironmentVariable("Voice_APIRegion") ?? Config.Voice.APIRegion;
@@ -162,21 +172,21 @@ internal class Program
         await Task.Delay(-1);
     }
 
-    private Task Slash_SlashCommandInvoked(SlashCommandsExtension sender, DSharpPlus.SlashCommands.EventArgs.SlashCommandInvokedEventArgs e)
+    private async Task Slash_SlashCommandInvoked(SlashCommandsExtension sender, DSharpPlus.SlashCommands.EventArgs.SlashCommandInvokedEventArgs e)
     {
-        Thread.CurrentThread.Name = "MainThread";
-
         e.Context.Client.Logger.LogInformation(BotEventId, "{Username} successfully invoked '{CommandName}'", e.Context.User.Username, e.Context.CommandName);
 
-        return Task.CompletedTask;
+        await e.Context.Client.UpdateStatusAsync(new DiscordActivity()
+        {
+            ActivityType = ActivityType.Playing,
+            Name = "Running commands..."
+        }, UserStatus.Idle);
     }
 
 #nullable disable
 
     private async Task Slash_SlashCommandErrored(SlashCommandsExtension sender, DSharpPlus.SlashCommands.EventArgs.SlashCommandErrorEventArgs e)
     {
-        Thread.CurrentThread.Name = "MainThread";
-
         e.Context.Client.Logger.LogError(BotEventId, "{Username} tried executing '{CommandName}' but it errored: {Type}: {Message}", e.Context.User.Username, e.Context?.CommandName ?? "<unknown command>", e.Exception.GetType(), e.Exception.Message ?? "<no message>");
 
         if (e.Exception is ChecksFailedException)
@@ -191,32 +201,51 @@ internal class Program
             };
             await e.Context.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"{embed}"));
         }
+
+        await e.Context.Client.UpdateStatusAsync(new DiscordActivity()
+        {
+            ActivityType = ActivityType.Watching,
+            Name = "Errors!"
+        }, UserStatus.DoNotDisturb);
     }
 
 #nullable enable
 
-    private Task Slash_SlashCommandExecuted(SlashCommandsExtension sender, DSharpPlus.SlashCommands.EventArgs.SlashCommandExecutedEventArgs e)
+    private async Task Slash_SlashCommandExecuted(SlashCommandsExtension sender, DSharpPlus.SlashCommands.EventArgs.SlashCommandExecutedEventArgs e)
     {
-        Thread.CurrentThread.Name = "MainThread";
-
         e.Context.Client.Logger.LogInformation(BotEventId, "{Username} successfully executed '{CommandName}'", e.Context.User.Username, e.Context.CommandName);
 
-        return Task.CompletedTask;
+        if (Program.stop)
+        {
+            await e.Context.Client.UpdateStatusAsync(new DiscordActivity()
+            {
+                ActivityType = Config.Discord.DefaultActivityType,
+                Name = Config.Discord.DefaultActivity
+            }, UserStatus.Online);
+        }
+        else
+        {
+            await e.Context.Client.UpdateStatusAsync(new DiscordActivity()
+            {
+                ActivityType = ActivityType.Playing,
+                Name = "Mechanics..."
+            }, UserStatus.DoNotDisturb);
+        }
     }
 
-    private Task Client_Ready(DiscordClient sender, ReadyEventArgs e)
+    private async Task Client_Ready(DiscordClient sender, ReadyEventArgs e)
     {
-        Thread.CurrentThread.Name = "MainThread";
-
         sender.Logger.LogInformation(BotEventId, "Client is ready to process events.");
 
-        return Task.CompletedTask;
+        await sender.UpdateStatusAsync(new DiscordActivity()
+        {
+            ActivityType = Config.Discord.DefaultActivityType,
+            Name = Config.Discord.DefaultActivity
+        }, UserStatus.Online);
     }
 
     private Task Client_GuildAvailable(DiscordClient sender, GuildCreateEventArgs e)
     {
-        Thread.CurrentThread.Name = "MainThread";
-
         sender.Logger.LogInformation(BotEventId, "Guild available: {GuildName}", e.Guild.Name);
 
         return Task.CompletedTask;
@@ -224,8 +253,6 @@ internal class Program
 
     private Task Client_ClientError(DiscordClient sender, ClientErrorEventArgs e)
     {
-        Thread.CurrentThread.Name = "MainThread";
-
         sender.Logger.LogError(BotEventId, e.Exception, "Exception occured");
 
         return Task.CompletedTask;
@@ -288,7 +315,7 @@ internal class Program
         return ssmlDoc;
     }
 
-    public static Fixate.Datas.Localization GetLocalization()
+    public static Datas.Localization GetLocalization()
     {
         Fixate.Datas.Localization output = new();
         string path = Path.Combine("localizations", $"{Config.Voice.Language.ToLower()}.json");

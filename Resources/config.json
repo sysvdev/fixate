@@ -1,6 +1,8 @@
 {
   "discord": {
-    "token": "<token>"
+    "token": "<token>",
+    "defaultactivity": "Commands...",
+    "defaultactivitytype": "ListeningTo"
   },
   "voice": {
     "apitoken": "<token>",

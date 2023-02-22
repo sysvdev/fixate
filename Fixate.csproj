@@ -9,13 +9,13 @@
 		<AssemblyName>Fixate</AssemblyName>
 		<RootNamespace>Fixate</RootNamespace>
 		<Description>A Guild Wars 2 Discord Bot for calling out raid mechanics among other things.</Description>
-		<AssemblyVersion>1.2.2.0</AssemblyVersion>
-		<FileVersion>1.2.2.0</FileVersion>
+		<AssemblyVersion>1.2.3.0</AssemblyVersion>
+		<FileVersion>1.2.3.0</FileVersion>
 		<Copyright>Copyright © 2023</Copyright>
 		<PackageId>Fixate</PackageId>
 		<Product>Fixate</Product>
 		<Authors>POQDavid</Authors>
-		<Version>1.2.2.0</Version>
+		<Version>1.2.3.0</Version>
 		<RepositoryType>git</RepositoryType>
 		<RepositoryUrl>git@github.com:vortex1409/fixate.git</RepositoryUrl>
 		<PackageProjectUrl>https://github.com/vortex1409/fixate</PackageProjectUrl>

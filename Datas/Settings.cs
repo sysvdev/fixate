@@ -61,7 +61,12 @@ public class Settings
             _ = Directory.CreateDirectory(Program.CurrentDir);
         }
 
-        JsonSerializerOptions options = new() { WriteIndented = true };
+        JsonSerializerOptions options = new()
+        {
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+            WriteIndented = true,
+            Converters = { new JsonStringEnumConverter() }
+        };
 
         File.WriteAllText(Program.SettingPath, JsonSerializer.Serialize(Program.Config, options));
     }
@@ -78,7 +83,9 @@ public class Settings
             {
                 JsonSerializerOptions options = new()
                 {
-                    WriteIndented = true
+                    Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                    WriteIndented = true,
+                    Converters = { new JsonStringEnumConverter() }
                 };
 
                 Program.Config = JsonSerializer.Deserialize<Settings>(json_string, options);
@@ -100,25 +107,51 @@ public class Settings
 public class Discord
 {
     private string defaultToken = "<token>";
+    private string defaultDefaultActivity = "Commands...";
+    private ActivityType defaultActivityType = ActivityType.ListeningTo;
 
     public Discord()
     {
         Token = defaultToken;
+        DefaultActivity = defaultDefaultActivity;
     }
 
-    public Discord(string token)
+    public Discord(string token, string defaultactivity)
     {
         Token = token;
+        DefaultActivity = defaultactivity;
     }
 
     [JsonPropertyName("token")]
-    [DefaultValue("")]
+    [DefaultValue("<token>")]
     public string Token
     {
         get => defaultToken;
         set
         {
             defaultToken = value;
+        }
+    }
+
+    [JsonPropertyName("defaultactivity")]
+    [DefaultValue("Commands...")]
+    public string DefaultActivity
+    {
+        get => defaultDefaultActivity;
+        set
+        {
+            defaultDefaultActivity = value;
+        }
+    }
+
+    [JsonPropertyName("defaultactivitytype")]
+    [DefaultValue(ActivityType.ListeningTo)]
+    public ActivityType DefaultActivityType
+    {
+        get => defaultActivityType;
+        set
+        {
+            defaultActivityType = value;
         }
     }
 }
