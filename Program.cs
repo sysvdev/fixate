@@ -1,4 +1,4 @@
-﻿/*
+/*
  *      This file is part of Fixate distribution (https://github.com/vortex1409/fixate).
  *      Copyright (c) 2023 contributors
  *
@@ -37,7 +37,7 @@ internal class Program
     public readonly EventId BotEventId = new(42, "Fixate");
 
     public static DiscordClient? Client { get; set; }
-    public CommandsNextExtension Commands { get; set; }
+
     public VoiceNextExtension Voice { get; set; }
 
     public static bool stop = false;
@@ -78,7 +78,6 @@ internal class Program
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     {
         Config.Discord.Token = Environment.GetEnvironmentVariable("Discord_Token") ?? Config.Discord.Token;
-        Config.Discord.CommandPrefix = Environment.GetEnvironmentVariable("Discord_CommandPrefix") ?? Config.Discord.CommandPrefix;
 
         Config.Voice.APIToken = Environment.GetEnvironmentVariable("Voice_APIToken") ?? Config.Voice.APIToken;
         Config.Voice.APIRegion = Environment.GetEnvironmentVariable("Voice_APIRegion") ?? Config.Voice.APIRegion;
@@ -137,7 +136,9 @@ internal class Program
             TokenType = TokenType.Bot,
 
             AutoReconnect = true,
-            LoggerFactory = logFactory
+            LoggerFactory = logFactory,
+
+            Intents = DiscordIntents.AllUnprivileged | DiscordIntents.MessageContents
         };
 
         Client = new DiscordClient(cfg);
@@ -146,26 +147,12 @@ internal class Program
         Client.GuildAvailable += this.Client_GuildAvailable;
         Client.ClientErrored += this.Client_ClientError;
 
-        var ccfg = new CommandsNextConfiguration
-        {
-            StringPrefixes = new[] { Config.Discord.CommandPrefix },
-
-            EnableDms = false,
-
-            EnableMentionPrefix = true
-        };
-
         var slash = Client.UseSlashCommands();
-        this.Commands = Client.UseCommandsNext(ccfg);
-
-        this.Commands.CommandExecuted += this.Commands_CommandExecuted;
-        this.Commands.CommandErrored += this.Commands_CommandErrored;
 
         slash.SlashCommandExecuted += Slash_SlashCommandExecuted;
         slash.SlashCommandErrored += Slash_SlashCommandErrored;
         slash.SlashCommandInvoked += Slash_SlashCommandInvoked;
 
-        this.Commands.RegisterCommands<BotCommands>();
         slash.RegisterCommands<BotSlashCommands>();
 
         this.Voice = Client.UseVoiceNext();
@@ -185,6 +172,7 @@ internal class Program
     }
 
 #nullable disable
+
     private async Task Slash_SlashCommandErrored(SlashCommandsExtension sender, DSharpPlus.SlashCommands.EventArgs.SlashCommandErrorEventArgs e)
     {
         Thread.CurrentThread.Name = "MainThread";
@@ -204,6 +192,7 @@ internal class Program
             await e.Context.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"{embed}"));
         }
     }
+
 #nullable enable
 
     private Task Slash_SlashCommandExecuted(SlashCommandsExtension sender, DSharpPlus.SlashCommands.EventArgs.SlashCommandExecutedEventArgs e)
@@ -242,33 +231,6 @@ internal class Program
         return Task.CompletedTask;
     }
 
-    private Task Commands_CommandExecuted(CommandsNextExtension sender, CommandExecutionEventArgs e)
-    {
-        e.Context.Client.Logger.LogInformation(BotEventId, "{Username} successfully executed '{QualifiedName}'", e.Context.User.Username, e.Command.QualifiedName);
-
-        return Task.CompletedTask;
-    }
-
-    private async Task Commands_CommandErrored(CommandsNextExtension sender, CommandErrorEventArgs e)
-    {
-        Thread.CurrentThread.Name = "MainThread";
-
-        e.Context.Client.Logger.LogError(BotEventId, "{Username} tried executing '{QualifiedName}' but it errored: {Type}: {Message}", e.Context.User.Username, e.Command?.QualifiedName ?? "<unknown command>", e.Exception.GetType(), e.Exception.Message ?? "<no message>");
-
-        if (e.Exception is ChecksFailedException ex)
-        {
-            var emoji = DiscordEmoji.FromName(e.Context.Client, ":no_entry:");
-
-            var embed = new DiscordEmbedBuilder
-            {
-                Title = "Access denied",
-                Description = $"{emoji} You do not have the permissions required to execute this command.",
-                Color = new DiscordColor(0xFF0000)
-            };
-            await e.Context.RespondAsync(embed);
-        }
-    }
-
     public static async Task<byte[]?> GetTTSStream(string text)
     {
         string ssml = GenerateSsml(Config.Voice.Language, Config.Voice.Name, text, Config.Voice.Style);
@@ -279,17 +241,17 @@ internal class Program
         using (var synthesizer = new SpeechSynthesizer(config, null))
         {
             using var result = await synthesizer.SpeakSsmlAsync(ssml);
-            if (result.Reason == ResultReason.SynthesizingAudioCompleted)
+            if (result.Reason is ResultReason.SynthesizingAudioCompleted)
             {
                 Logger.Warning("Speech synthesized for text [{Text}], and the audio was written to output stream.", text);
                 return AudioConverter.Resample(result.AudioData, 48000, 48000, 1, 2);
             }
-            else if (result.Reason == ResultReason.Canceled)
+            else if (result.Reason is ResultReason.Canceled)
             {
                 var cancellation = SpeechSynthesisCancellationDetails.FromResult(result);
                 Logger.Warning("CANCELED: Reason={Reason}", cancellation.Reason);
 
-                if (cancellation.Reason == CancellationReason.Error)
+                if (cancellation.Reason is CancellationReason.Error)
                 {
                     Logger.Warning("CANCELED: ErrorCode={ErrorCode}", cancellation.ErrorCode);
                     Logger.Warning("CANCELED: ErrorDetails=[{ErrorDetails}]", cancellation.ErrorDetails);
@@ -400,7 +362,7 @@ internal class Program
 
                     if ((intervaltime.Elapsed.TotalSeconds >= bossMechanics.Interval - bossMechanics.WarnTime) || startit)
                     {
-                        if (bossMechanics.PlayersInvolved != 0)
+                        if (bossMechanics.PlayersInvolved is not 0)
                         {
                             if ((index + 1) > bossMechanics.MechanicNames.Length)
                             {
@@ -433,7 +395,7 @@ internal class Program
 
                 Logger.Information("Seconds: {Seconds}", starttime.Elapsed.TotalSeconds);
 
-                if (Client != null)
+                if (Client is not null)
                 {
                     _ = Client.SendMessageAsync(lastdiscordChannel, $"End of the Mechanic Index: {bmIndex}");
                 }
@@ -451,7 +413,7 @@ internal class Program
 
     public static void MechanicExe(BossMechanics bossMechanics, int index, int playerIndex, string[] players, VoiceNextConnection vnc, Datas.Localization localization)
     {
-        if (bossMechanics.PlayersInvolved != 0)
+        if (bossMechanics.PlayersInvolved is not 0)
         {
             string MechanicName = bossMechanics.MechanicNames[index];
             string PlayerName = localization.DefaultPlayerNameFormat.Replace("%(name)", players[(playerIndex - 1)]).Replace("%(index)", playerIndex.ToString());
@@ -471,9 +433,9 @@ internal class Program
             LastSay = text;
             Logger.Information("Saying {Text}", text);
 
-            if (vnc == null)
+            if (vnc is null)
             {
-                if (Client != null)
+                if (Client is not null)
                 {
                     _ = Client.SendMessageAsync(lastdiscordChannel, $"**[{DateTime.Now:HH:mm:ss}]** {text}");
                 }

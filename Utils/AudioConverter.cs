@@ -5,21 +5,21 @@ public static class AudioConverter
 {
     public static byte[] Resample(byte[] input, int inputSampleRate, int outputSampleRate, int inputChannels, int outputChannels, int inputBitDepth = 16, int outputBitDepth = 16)
     {
-        if ((inputChannels != 1 && inputChannels != 2) || (outputChannels != 1 && outputChannels != 2))
+        if ((inputChannels is not 1 && inputChannels is not 2) || (outputChannels is not 1 && outputChannels is not 2))
             return input;
 
         var buff = ResampleInternal(input, inputSampleRate, outputSampleRate);
 
-        if (inputChannels == 1)
+        if (inputChannels is 1)
         {
-            if (outputChannels == 2)
+            if (outputChannels is 2)
             {
                 buff = MonoToStereo(buff);
             }
         }
-        else if (inputChannels == 2)
+        else if (inputChannels is 2)
         {
-            if (outputChannels == 1)
+            if (outputChannels is 1)
                 buff = StereoToMono(buff);
         }
 

@@ -17,7 +17,6 @@
  */
 
 global using DSharpPlus;
-global using DSharpPlus.CommandsNext;
 global using DSharpPlus.CommandsNext.Attributes;
 global using DSharpPlus.CommandsNext.Exceptions;
 global using DSharpPlus.Entities;

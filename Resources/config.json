@@ -1,7 +1,6 @@
 {
   "discord": {
-    "token": "<token>",
-    "prefix": "!"
+    "token": "<token>"
   },
   "voice": {
     "apitoken": "<token>",

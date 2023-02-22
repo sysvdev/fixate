@@ -15,7 +15,6 @@ services:
       dockerfile: ./Dockerfile
     environment: 
       - Discord_Token=<token>
-      - Discord_CommandPrefix=!
       - Voice_APIToken=<token>
       - Voice_APIRegion=eastus
       - Voice_Language=en-US

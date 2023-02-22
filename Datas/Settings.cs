@@ -19,6 +19,7 @@
 namespace Fixate.Datas;
 
 #nullable disable
+
 public class Settings
 {
     private Discord defaultDiscord = new();
@@ -99,18 +100,15 @@ public class Settings
 public class Discord
 {
     private string defaultToken = "<token>";
-    private string defaultCommandPrefix = "!";
 
     public Discord()
     {
         Token = defaultToken;
-        CommandPrefix = defaultCommandPrefix;
     }
 
-    public Discord(string token, string prefix)
+    public Discord(string token)
     {
         Token = token;
-        CommandPrefix = prefix;
     }
 
     [JsonPropertyName("token")]
@@ -121,17 +119,6 @@ public class Discord
         set
         {
             defaultToken = value;
-        }
-    }
-
-    [JsonPropertyName("prefix")]
-    [DefaultValue("")]
-    public string CommandPrefix
-    {
-        get => defaultCommandPrefix;
-        set
-        {
-            defaultCommandPrefix = value;
         }
     }
 }

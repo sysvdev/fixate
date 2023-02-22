@@ -24,27 +24,27 @@ public class BotSlashCommands : ApplicationCommandModule
     public async Task Join(InteractionContext ctx, [Option("channel", "Channel to join")] DiscordChannel chn = null)
     {
         var vnext = ctx.Client.GetVoiceNext();
-        if (vnext == null)
+        if (vnext is null)
         {
             await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("VNext is not enabled or configured."));
             return;
         }
 
         var vnc = vnext.GetConnection(ctx.Guild);
-        if (vnc != null)
+        if (vnc is not null)
         {
             await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Already connected in this guild."));
             return;
         }
 
         var vstat = ctx.Member?.VoiceState;
-        if (vstat?.Channel == null && chn == null)
+        if (vstat?.Channel is null && chn is null)
         {
             await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("You are not in a voice channel."));
             return;
         }
 
-        if (chn == null)
+        if (chn is null)
             chn = vstat.Channel;
 
         vnc = await vnext.ConnectAsync(chn);
@@ -55,14 +55,14 @@ public class BotSlashCommands : ApplicationCommandModule
     public async Task Leave(InteractionContext ctx)
     {
         var vnext = ctx.Client.GetVoiceNext();
-        if (vnext == null)
+        if (vnext is null)
         {
             await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("VNext is not enabled or configured."));
             return;
         }
 
         var vnc = vnext.GetConnection(ctx.Guild);
-        if (vnc == null)
+        if (vnc is null)
         {
             await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Not connected in this guild."));
             return;
@@ -89,7 +89,7 @@ public class BotSlashCommands : ApplicationCommandModule
 
         if (players is not 0)
         {
-            if (objects.Length == 1 || !(objects.Length >= players))
+            if (objects.Length is 1 || !(objects.Length >= players))
             {
                 res += $"\nPlease enter {players} names seperated by space.";
                 await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent(res));
@@ -108,7 +108,7 @@ public class BotSlashCommands : ApplicationCommandModule
             }
 
             var vnext = ctx.Client.GetVoiceNext();
-            if (vnext == null)
+            if (vnext is null)
             {
                 await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("VNext is not enabled or configured."));
                 return;
@@ -135,14 +135,14 @@ public class BotSlashCommands : ApplicationCommandModule
     public async Task Say(InteractionContext ctx, [Option("text", "TTS Text"), RemainingText] string text)
     {
         var vnext = ctx.Client.GetVoiceNext();
-        if (vnext == null)
+        if (vnext is null)
         {
             await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("VNext is not enabled or configured."));
             return;
         }
 
         var vnc = vnext.GetConnection(ctx.Guild);
-        if (vnc == null)
+        if (vnc is null)
         {
             await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Not connected in this guild."));
             return;
@@ -174,4 +174,11 @@ public class BotSlashCommands : ApplicationCommandModule
         if (exc != null)
             await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"An exception occured during playback: `{exc.GetType()}: {exc.Message}`"));
     }
+
+    [SlashCommand("ping", "Replies with Pong and Discord Websocket latency for Client to your ping")]
+    public async Task Ping(InteractionContext context) => await context.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new()
+    {
+        Content = $"Pong! Discord Websocket latency for Client is {context.Client.Ping}ms.",
+        IsEphemeral = true
+    });
 }
