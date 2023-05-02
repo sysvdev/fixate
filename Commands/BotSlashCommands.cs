@@ -36,7 +36,7 @@ public class BotSlashCommands : ApplicationCommandModule
     }
 
     [SlashCommand("join", "Joins a voice channel.")]
-    public async Task Join(InteractionContext ctx, [Option("channel", "Channel to join")] DiscordChannel chn = null)
+    public async Task Join(InteractionContext ctx, [Option("channel", "Channel to join")] DiscordChannel? chn = null)
     {
         var vnext = ctx.Client.GetVoiceNext();
         if (vnext is null)
@@ -59,11 +59,19 @@ public class BotSlashCommands : ApplicationCommandModule
             return;
         }
 
-        if (chn is null)
+        if (chn is null && vstat is not null)
+        {
             chn = vstat.Channel;
+        }
 
-        vnc = await vnext.ConnectAsync(chn);
-        await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"Connected to `{chn.Name}`"));
+        if (chn is not null)
+        {
+            vnc = await vnext.ConnectAsync(chn);
+            await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"Connected to `{chn.Name}`"));
+        }
+        else {
+            await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"Error chn is null!"));
+        }
     }
 
     [SlashCommand("leave", "Leaves a voice channel.")]
@@ -88,7 +96,7 @@ public class BotSlashCommands : ApplicationCommandModule
     }
 
     [SlashCommand("start", "Starts the bot.")]
-    public async Task Start(InteractionContext ctx, [ChoiceProvider(typeof(BossChoiceProvider))][Option("boss", "Name of the boss.")] string boss, [Option("names", "Names of the players seperated by space."), RemainingText] String names = null)
+    public async Task Start(InteractionContext ctx, [ChoiceProvider(typeof(BossChoiceProvider))][Option("boss", "Name of the boss.")] string boss, [Option("names", "Names of the players seperated by space."), RemainingText] String names = "")
     {
         string[] objects = Array.Empty<string>();
 
@@ -167,7 +175,7 @@ public class BotSlashCommands : ApplicationCommandModule
         while (vnc.IsPlaying)
             await vnc.WaitForPlaybackFinishAsync();
 
-        Exception exc = null;
+        Exception? exc = null;
         await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"Saying `{text}`"));
 
         try

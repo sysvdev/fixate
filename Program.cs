@@ -422,7 +422,7 @@ internal class Program
 
                 Logger.Information("Seconds: {Seconds}", starttime.Elapsed.TotalSeconds);
 
-                if (Client is not null)
+                if (Client is not null && lastdiscordChannel is not null)
                 {
                     _ = Client.SendMessageAsync(lastdiscordChannel, $"End of the Mechanic Index: {bmIndex}");
                 }
@@ -462,7 +462,7 @@ internal class Program
 
             if (vnc is null)
             {
-                if (Client is not null)
+                if (Client is not null && lastdiscordChannel is not null)
                 {
                     _ = Client.SendMessageAsync(lastdiscordChannel, $"**[{DateTime.Now:HH:mm:ss}]** {text}");
                 }
